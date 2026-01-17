@@ -1,0 +1,18 @@
+node_modules/
+.pnpm-store/
+
+# build outputs
+apps/spa/dist/
+apps/worker/dist/
+
+# local env
+.env
+.env.*
+
+# coverage and test artifacts
+coverage/
+playwright-report/
+
+# misc
+.DS_Store
+*.log

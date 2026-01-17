@@ -1,0 +1,6 @@
+name = "webcam-sunline"
+main = "src/index.ts"
+compatibility_date = "2024-09-25"
+
+[dev]
+port = 8787

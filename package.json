@@ -1,0 +1,8 @@
+{
+  "name": "webcam-sunline",
+  "private": true,
+  "packageManager": "pnpm@9.12.3",
+  "scripts": {
+    "test": "pnpm -C apps/worker test"
+  }
+}
