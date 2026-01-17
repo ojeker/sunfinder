@@ -25,7 +25,7 @@ This plan orders work to reduce integration risk and enable early end-to-end fee
 
 ## Phase 4 (SPA): Core UI + Computed Fields
 1. Add geodesic computations: distance (km), bearing degrees + compass.
-2. Render `WebcamCard` with name, elevation, distance, bearing.
+2. Render `WebcamCard` with name, elevation, distance, bearing, and a webcam image preview.
 3. Implement refresh interval per webcam and error badges for failures.
 
 ## Phase 5 (Both): E2E Loop (Before Extra Features)

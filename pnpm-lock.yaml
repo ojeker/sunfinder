@@ -13,6 +13,9 @@ importers:
       '@webcam-sunline/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@webcam-sunline/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       vue:
         specifier: ^3.5.4
         version: 3.5.26(typescript@5.9.3)

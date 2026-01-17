@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@webcam-sunline/config": "workspace:*",
+    "@webcam-sunline/domain": "workspace:*",
     "vue": "^3.5.4"
   },
   "devDependencies": {

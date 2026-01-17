@@ -1,6 +1,8 @@
 import { parse } from 'yaml';
 import { root, type RootConfig } from './schema';
 
+export type { RootConfig } from './schema';
+
 export class ConfigError extends Error {
   readonly issues?: string[];
 
