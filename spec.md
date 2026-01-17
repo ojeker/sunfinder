@@ -2,7 +2,7 @@
 
 ## Background
 
-You want a **GitHub Pages–hosted Vue 3 SPA** that aggregates webcams to determine at what **altitude the sun breaks above the fog layer** during fog season. We’ll implement a **Static + Edge Proxy** architecture (formerly Option B) using a **Cloudflare Worker** as a tiny normalize/cache/CORS layer. The SPA computes **distance and bearing from the user to each webcam**, and displays **webcam elevation** alongside optional solar elevation. All **coordinates are provided in Swiss grid (EPSG:2056 / CH1903+ / LV95)**, and the app converts them to WGS84 client-side for geodesic math.
+You want a **GitHub Pages–hosted Vue 3 SPA** that aggregates webcams to determine at what **altitude the sun breaks above the fog layer** during fog season. We’ll implement a **Static + Edge Proxy** architecture (formerly Option B) using a **Cloudflare Worker** as a tiny normalize/cache/CORS layer. The SPA computes **distance and bearing from the user to each webcam**, and displays **webcam elevation**. All **coordinates are provided in Swiss grid (EPSG:2056 / CH1903+ / LV95)**, and the app uses simple planar math directly in that coordinate system.
 
 We’ll prioritize **simplicity**, **local dev for both SPA and Worker**, and **SOLID principles** backed by strong automated tests and clear exceptions.
 
@@ -14,7 +14,7 @@ We’ll prioritize **simplicity**, **local dev for both SPA and Worker**, and **
 * Use a **Cloudflare Worker** proxy for CORS/header normalization and light HTML extraction.
 * **YAML registry** includes for each webcam: `id`, `name`, `elevation_m_asl`, `coord_ch2056: { e, n }`, `source` (direct image/HLS/iframe/page), `attribution`, `refresh`.
 * YAML has a **global settings** block with `user_coord_ch2056: { e, n }`, `units`, `worker_base_url`, and UI defaults.
-* **All coordinates are EPSG:2056** (CH1903+ / LV95). SPA converts to WGS84 for distance/bearing/solar math.
+* **All coordinates are EPSG:2056** (CH1903+ / LV95). SPA uses planar distance and bearing directly in that coordinate system.
 * SPA shows **Name, Elevation, Distance (km), Bearing (°/compass)** for each webcam tile.
 * **Local dev**: run SPA (`vite`) and Worker (`wrangler dev`) concurrently.
 * **SOLID** codebase, **TypeScript-first**, explicit domain types, and **clear exceptions** with user-friendly messages.
@@ -133,8 +133,7 @@ webcams:
 
 ### Coordinate Handling
 
-* **EPSG:2056 (CH1903+ / LV95)** input only. Convert to **WGS84** in SPA for haversine/bearing and SunCalc.
-* Library: **proj4** with EPSG:2056 string.
+* **EPSG:2056 (CH1903+ / LV95)** input only. Use planar distance and bearing in that coordinate system (no WGS84 conversion).
 
 ### API Contract (OpenAPI 3.1)
 
@@ -180,7 +179,7 @@ paths:
 
 ### UI Composition (Vue, SOLID)
 
-* **Domain**: projections, distance, bearing, sun angle (pure TS, no framework deps).
+* **Domain**: planar distance and bearing (pure TS, no framework deps).
 * **Infrastructure**: `WorkerClient` (builds endpoint URLs) and `YamlConfigLoader`.
 * **Application**: Pinia stores for settings, user location, webcams, and errors.
 * **Presentation**: `WebcamCard.vue`, `Gallery.vue`, `LocationBar.vue`, `CompassBadge.vue`, `DistanceBadge.vue`.
@@ -191,8 +190,8 @@ paths:
 ### Tooling & Libraries
 
 * **Vue 3 + Vite + TypeScript** (SPA). Official TS setup via `create-vue`.
-* **Pinia*([vuejs.org](https://vuejs.org/guide/typescript/overview?utm_source=chatgpt.com))**SunCalc** for solar ele([pinia.vuejs.org](https://pinia.vuejs.org/?utm_source=chatgpt.com))ion for CH1903+/LV95 → WGS84 conversi([npmjs.com](https://www.npmjs.com/package/suncalc?utm_source=chatgpt.com))or HLS (if any).
-* **Cloudflare Worker**: **TypeScript**, **Hono** router, **HTMLRewrit([epsg.io](https://epsg.io/2056?utm_source=chatgpt.com))ith **Wrangler/Miniflare**.
+* **Pinia** for state; optional HLS support (if any).
+* **Cloudflare Worker**: **TypeScript**, **Hono** router, **HTMLRewriter** with **Wrangler/Miniflare**.
 
 ### Projec([github.com](https://github.com/video-dev/hls.js?utm_source=chatgpt.com))/apps/spa/            # Vue 3 + Vite + TS
 
@@ -260,16 +259,21 @@ app.get('/api/html-image', async c => {
 export default app;
 ```
 
-### Domain (projection + geo)
+### Domain (planar geo)
 
 ```ts
-import proj4 from 'proj4';
-proj4.defs('EPSG:2056', '+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
-export function ch2056ToWgs84(e:number,n:number){
-  const [lon,lat] = proj4('EPSG:2056','WGS84',[e,n]);
-  return { lat, lon };
+export function planarDistanceKm(a:{e:number;n:number}, b:{e:number;n:number}) {
+  const dx = b.e - a.e;
+  const dy = b.n - a.n;
+  return Math.hypot(dx, dy) / 1000;
 }
-// haversineKm, bearingDeg as earlier
+
+export function planarBearingDeg(a:{e:number;n:number}, b:{e:number;n:number}) {
+  const dx = b.e - a.e;
+  const dy = b.n - a.n;
+  const radians = Math.atan2(dx, dy);
+  return (radians * 180) / Math.PI >= 0 ? (radians * 180) / Math.PI : (radians * 180) / Math.PI + 360;
+}
 ```
 
 ### Local Development
@@ -302,7 +306,7 @@ export function ch2056ToWgs84(e:number,n:number){
 * Contract tests green (endpoints, headers, error codes).
 * Per-webcam tile shows correct **name, elevation, distance, bearing** given a fixed test `user_coord_ch2056`.
 * Worker returns images within target TTL; CORS headers present; allowlist enforced.
-* Projection math verified against known reference points in CH.
+* Planar distance/bearing math verified against known reference points in CH.
 
 ---
 

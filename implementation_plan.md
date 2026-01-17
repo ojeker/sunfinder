@@ -14,7 +14,7 @@ This plan orders work to reduce integration risk and enable early end-to-end fee
 
 ## Phase 2 (Both): Shared Config + Domain Utilities (Low Risk, High Reuse)
 1. `packages/config`: zod schema for `webcams.yml`, loader with friendly errors.
-2. `packages/domain`: CH2056 → WGS84 projection and geo math (distance/bearing/compass).
+2. `packages/domain`: planar geo math in CH2056 (distance/bearing/compass).
 3. Unit tests for both packages using fixed inputs.
 
 ## Phase 3 (SPA): SPA Skeleton + Data Flow (Early UI Feedback)
