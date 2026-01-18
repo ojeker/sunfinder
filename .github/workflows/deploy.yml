@@ -1,4 +1,4 @@
-name: pages
+name: Deploy spa to pages
 
 on:
   push:
@@ -11,8 +11,12 @@ permissions:
   id-token: write
 
 jobs:
-  deploy:
+  spa:
+    name: spa
     runs-on: ubuntu-latest
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -20,19 +24,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.3
+          run_install: false
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
 
-      - name: Setup pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@9.12.3 --activate
-
       - name: Install
         run: pnpm install --frozen-lockfile
+
+      - name: Test SPA
+        run: pnpm -C apps/spa test
 
       - name: Build SPA
         run: pnpm -C apps/spa build
@@ -46,5 +54,4 @@ jobs:
           path: apps/spa/dist
 
       - name: Deploy
-        id: deployment
         uses: actions/deploy-pages@v4
