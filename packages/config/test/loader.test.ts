@@ -8,6 +8,7 @@ settings:
   user_coord_ch2056: { e: 2600000, n: 1200000 }
   units: metric
   worker_base_url: "http://127.0.0.1:8787"
+  refresh_minutes: 0.5
 webcams:
   - id: test
     name: Test Cam
@@ -16,7 +17,6 @@ webcams:
     source:
       kind: snapshot
       url: "https://example.com/image.jpg"
-    refresh: { seconds: 10 }
 `;
 
     const result = parseWebcamsYaml(yaml);

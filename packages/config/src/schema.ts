@@ -37,14 +37,15 @@ export const webcam = z.object({
   elevation_m_asl: z.number().int().nonnegative(),
   coord_ch2056: chCoord,
   source,
-  attribution: z.string().optional(),
-  refresh: z.object({ seconds: z.number().int().positive() }).default({ seconds: 30 })
+  worker_bypass: z.boolean().optional(),
+  attribution: z.string().optional()
 });
 
 export const settings = z.object({
   user_coord_ch2056: chCoord,
   units: z.enum(['metric', 'imperial']).default('metric'),
-  worker_base_url: z.string().url()
+  worker_base_url: z.string().url(),
+  refresh_minutes: z.number().finite().nonnegative()
 });
 
 export const root = z.object({

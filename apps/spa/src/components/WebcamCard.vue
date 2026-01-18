@@ -62,10 +62,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import type { RootConfig } from '@webcam-sunline/config/parse';
 import { compass8FromBearing, planarBearingDeg, planarDistanceKm } from '@webcam-sunline/domain';
-import { WorkerClient } from '../services/workerClient';
+import {
+  isWorkerBypass,
+  nextRetryDelayMs,
+  resolvePreviewBaseUrl,
+  shouldRetry
+} from '../services/previewResolver';
 
 type Webcam = RootConfig['webcams'][number];
 type Coord = RootConfig['settings']['user_coord_ch2056'];
@@ -74,11 +79,14 @@ const props = defineProps<{
   webcam: Webcam;
   userCoord: Coord;
   workerBaseUrl: string;
+  refreshMinutes: number;
+  paused: boolean;
 }>();
 
-const workerClient = new WorkerClient(props.workerBaseUrl);
 const refreshToken = ref(Date.now());
 const loadError = ref<string | null>(null);
+const retryAttempt = ref(0);
+const retryTimeoutId = ref<number | null>(null);
 
 const distanceKm = computed(() => planarDistanceKm(props.userCoord, props.webcam.coord_ch2056));
 const bearingDeg = computed(() => planarBearingDeg(props.userCoord, props.webcam.coord_ch2056));
@@ -87,16 +95,10 @@ const arrowStyle = computed(() => ({
   transform: `rotate(${bearingDeg.value}deg)`
 }));
 
+const isBypass = computed(() => isWorkerBypass(props.webcam));
+
 const previewBaseUrl = computed(() => {
-  if (props.webcam.source.kind === 'snapshot' && props.webcam.source.url) {
-    return workerClient.imageUrl(props.webcam.source.url);
-  }
-
-  if (props.webcam.source.kind === 'page' && props.webcam.source.page) {
-    return workerClient.htmlImageUrl(props.webcam.source.page, props.webcam.source.selector);
-  }
-
-  return null;
+  return resolvePreviewBaseUrl(props.webcam, props.workerBaseUrl);
 });
 
 const previewUrl = computed(() => {
@@ -119,29 +121,92 @@ const statusMessage = computed(() => {
 });
 
 function handleImageError() {
-  loadError.value = 'Preview failed';
+  loadError.value = isBypass.value
+    ? 'Direct image failed (worker bypass enabled)'
+    : 'Preview failed';
+  scheduleRetry();
 }
 
 function handleImageLoad() {
   loadError.value = null;
+  retryAttempt.value = 0;
+  clearRetryTimer();
 }
 
 let intervalId: number | null = null;
 
-onMounted(() => {
-  if (!Number.isFinite(props.webcam.refresh.seconds) || props.webcam.refresh.seconds <= 0) {
+function clearRetryTimer() {
+  if (retryTimeoutId.value !== null) {
+    window.clearTimeout(retryTimeoutId.value);
+    retryTimeoutId.value = null;
+  }
+}
+
+function clearIntervalTimer() {
+  if (intervalId !== null) {
+    window.clearInterval(intervalId);
+    intervalId = null;
+  }
+}
+
+function startRefresh(triggerImmediate = false) {
+  clearIntervalTimer();
+  if (props.paused || !Number.isFinite(props.refreshMinutes) || props.refreshMinutes <= 0) {
     return;
   }
-
-  const intervalMs = props.webcam.refresh.seconds * 1000;
+  if (triggerImmediate) {
+    refreshToken.value = Date.now();
+  }
+  const intervalMs = props.refreshMinutes * 60 * 1000;
   intervalId = window.setInterval(() => {
     refreshToken.value = Date.now();
   }, intervalMs);
+}
+
+function stopRefresh() {
+  clearIntervalTimer();
+  clearRetryTimer();
+}
+
+function scheduleRetry() {
+  if (props.paused || !previewBaseUrl.value || !shouldRetry(retryAttempt.value)) {
+    return;
+  }
+
+  const delayMs = nextRetryDelayMs(retryAttempt.value);
+  retryAttempt.value += 1;
+  clearRetryTimer();
+  retryTimeoutId.value = window.setTimeout(() => {
+    refreshToken.value = Date.now();
+  }, delayMs);
+}
+
+onMounted(() => {
+  startRefresh();
 });
 
 onUnmounted(() => {
-  if (intervalId !== null) {
-    window.clearInterval(intervalId);
-  }
+  stopRefresh();
 });
+
+watch(
+  () => props.paused,
+  paused => {
+    if (paused) {
+      stopRefresh();
+    } else {
+      startRefresh(true);
+      if (loadError.value) {
+        refreshToken.value = Date.now();
+      }
+    }
+  }
+);
+
+watch(
+  () => props.refreshMinutes,
+  () => {
+    startRefresh();
+  }
+);
 </script>

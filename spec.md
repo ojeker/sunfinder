@@ -99,7 +99,7 @@ webcams:
     refresh: { seconds: 30 }
 
   - id: windy
-    name: Windy Webcam (provider embed required)
+    name: Bei Wisenberg - Wellness
     elevation_m_asl: 0 # TODO
     coord_ch2056: { e: 0, n: 0 } # TODO
     source: { kind: iframe, url: "https://webcams.windy.com/" } # placeholder; requires official embed

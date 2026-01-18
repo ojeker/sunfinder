@@ -8,6 +8,7 @@ describe('worker api', () => {
   const originalHtmlRewriter = (globalThis as typeof globalThis & { HTMLRewriter?: typeof HTMLRewriter })
     .HTMLRewriter;
   const fixtureHtml = readFileSync(new URL('./fixtures/html-image.html', import.meta.url), 'utf8');
+  const windyEmbedHtml = readFileSync(new URL('./fixtures/windy-embed.html', import.meta.url), 'utf8');
 
   beforeAll(() => {
     class TestHTMLRewriter {
@@ -177,6 +178,21 @@ describe('worker api', () => {
     expect(res.status).toBe(302);
     expect(res.headers.get('location')).toBe(
       '/api/image?url=https%3A%2F%2Fexample.com%2Fimages%2Ffirst.jpg'
+    );
+  });
+
+  it('extracts windy embed background image via selector', async () => {
+    globalThis.fetch = async () => new Response(windyEmbedHtml, { status: 200 });
+
+    const res = await app.request(
+      'http://localhost/api/html-image?page=https%3A%2F%2Fexample.com%2Fembed.html&selector=img%23background',
+      {},
+      env
+    );
+
+    expect(res.status).toBe(302);
+    expect(res.headers.get('location')).toBe(
+      '/api/image?url=https%3A%2F%2Fimgproxy.windy.com%2F_%2Fnormal%2Fplain%2Fcurrent%2F1352710771%2Foriginal.jpg'
     );
   });
 });
