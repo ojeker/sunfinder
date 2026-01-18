@@ -1,65 +1,79 @@
 settings:
-  user_coord_ch2056: { e: 2683400, n: 1245600 }
-  units: metric
+  user_coord_ch2056: { e: 2637392, n: 1246071 }
   worker_base_url: "http://127.0.0.1:8787"
-  refresh_minutes: 0.5
+  refresh_minutes: 5
 
 webcams:
-  - id: hupp
-    name: hupp
-    elevation_m_asl: 900 # TODO
-    coord_ch2056: { e: 2640000.0, n: 1230000.0 } # TODO
+
+  - id: 4702
+    name: Oensiger Roggen
+    elevation_m_asl: 869
+    coord_ch2056: { e: 2621181, n: 1239374 }
+    source: { kind: snapshot, url: "https://imgproxy.windy.com/_/normal/plain/current/1697039924/original.jpg" }
+    worker_bypass: true
+
+  - id: 4717
+    name: Brunnersberg
+    elevation_m_asl: 1077
+    coord_ch2056: { e: 2613400, n: 1241835 }
+    source: { kind: snapshot, url: "https://imgproxy.windy.com/_/normal/plain/current/1346333638/original.jpg" }
+    worker_bypass: true
+
+  - id: 4634
+    name: Hupp Lodge
+    elevation_m_asl: 799
+    coord_ch2056: { e: 2632736, n: 1249609 }
     source: { kind: snapshot, url: "https://cam.hupplodge.ch:50001/axis-cgi/jpg/image.cgi" }
     worker_bypass: true
 
-  - id: barmelweid
-    name: Aussicht Barmelweid
-    elevation_m_asl: 900 # TODO
-    coord_ch2056: { e: 2640000.0, n: 1230000.0 } # TODO
+  - id: 5017
+    name: Barmelweid
+    elevation_m_asl: 770
+    coord_ch2056: { e: 2640217, n: 1252411 }
     source: { kind: snapshot, url: "https://www.barmelweid.ch/aussicht_barmelweid/Bilder/LatestImage.jpg" }
     worker_bypass: true
 
-  - id: deinkick-solarb
-    name: Deinkick Solarb
-    elevation_m_asl: 1000 # TODO
-    coord_ch2056: { e: 2600000.0, n: 1230000.0 } # TODO
+  - id: 4438_rodel
+    name: Langenbruck Rodelbahn
+    elevation_m_asl: 753
+    coord_ch2056: { e: 2624779, n: 1243855 }
     source: { kind: snapshot, url: "https://deinkick.ch/webcams/solarb_cam03-r.jpg" }
     worker_bypass: true
 
-  - id: deinkick-skil
-    name: Deinkick Skil
-    elevation_m_asl: 1000 # TODO
-    coord_ch2056: { e: 2600000.0, n: 1230000.0 } # TODO
+  - id: 4438_wanne
+    name: Langenbruck Skilift
+    elevation_m_asl: 809
+    coord_ch2056: { e: 2624420, n: 1243523 }
     source: { kind: snapshot, url: "https://deinkick.ch/webcams/skil_cam04.jpg" }
     worker_bypass: true
 
-  - id: ramsach
-    name: Bad Ramsach - Läufelfingen
-    elevation_m_asl: 0 # TODO
-    coord_ch2056: { e: 0, n: 0 } # TODO
+  - id: 4448
+    name: Bad Ramsach
+    elevation_m_asl: 735
+    coord_ch2056: { e: 2632700, n: 1250733 }
     source:
       kind: snapshot
       url: "https://imgproxy.windy.com/_/normal/plain/current/1352710771/original.jpg"
     worker_bypass: true
     attribution: "Windy.com / Bad Ramsach"
 
-  - id: känerkinden
+  - id: 4447
     name: Känerkinden
-    elevation_m_asl: 0 # TODO
-    coord_ch2056: { e: 0, n: 0 } # TODO
+    elevation_m_asl: 575
+    coord_ch2056: { e: 2629734, n: 1251340 }
     source: { kind: snapshot, url: "https://inubis.multipixx.net/currentPixx/17" }
     worker_bypass: true
 
-  - id: wasserflue
-    name: Wasserflue Aarau
-    elevation_m_asl: 0 # TODO
-    coord_ch2056: { e: 0, n: 0 } # TODO
+  - id: 5024
+    name: Wasserflue
+    elevation_m_asl: 860
+    coord_ch2056: { e: 2643892, n: 1253531 }
     source: { kind: snapshot, url: "https://webcam.wasserflue-aarau.ch/pos5.jpg" }
     worker_bypass: true
 
-  - id: balmberg
-    name: Seilpark Balmberg
-    elevation_m_asl: 0 # TODO
-    coord_ch2056: { e: 0, n: 0 } # TODO
+  - id: 4524
+    name: Balmberg
+    elevation_m_asl: 1078
+    coord_ch2056: { e: 2607754, n: 1234970 }
     source: { kind: snapshot, url: "https://seilpark-balmberg.multipixx.net/currentPixx/19" }
     worker_bypass: true

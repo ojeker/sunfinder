@@ -32,7 +32,12 @@ export const source = z
   });
 
 export const webcam = z.object({
-  id: z.string().min(1),
+  id: z.preprocess(value => {
+    if (typeof value === 'number') {
+      return String(value);
+    }
+    return value;
+  }, z.string().min(1)),
   name: z.string().min(1),
   elevation_m_asl: z.number().int().nonnegative(),
   coord_ch2056: chCoord,
@@ -43,7 +48,6 @@ export const webcam = z.object({
 
 export const settings = z.object({
   user_coord_ch2056: chCoord,
-  units: z.enum(['metric', 'imperial']).default('metric'),
   worker_base_url: z.string().url(),
   refresh_minutes: z.number().finite().nonnegative()
 });

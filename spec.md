@@ -13,7 +13,7 @@ We’ll prioritize **simplicity**, **local dev for both SPA and Worker**, and **
 * Host a **Vue 3 + Vite + TypeScript** SPA on **GitHub Pages**.
 * Use a **Cloudflare Worker** proxy for CORS/header normalization and light HTML extraction.
 * **YAML registry** includes for each webcam: `id`, `name`, `elevation_m_asl`, `coord_ch2056: { e, n }`, `source` (direct image/HLS/iframe/page), `attribution`, `refresh`.
-* YAML has a **global settings** block with `user_coord_ch2056: { e, n }`, `units`, `worker_base_url`, and UI defaults.
+* YAML has a **global settings** block with `user_coord_ch2056: { e, n }`, `worker_base_url`, and UI defaults.
 * **All coordinates are EPSG:2056** (CH1903+ / LV95). SPA uses planar distance and bearing directly in that coordinate system.
 * SPA shows **Name, Elevation, Distance (km), Bearing (°/compass)** for each webcam tile.
 * **Local dev**: run SPA (`vite`) and Worker (`wrangler dev`) concurrently.
@@ -65,7 +65,6 @@ CF --> SPA : image response (CORS ok, cached) or 302→image
 ```yaml
 settings:
   user_coord_ch2056: { e: 2683400.0, n: 1245600.0 } # Swiss LV95 (EPSG:2056)
-  units: metric
   worker_base_url: "http://127.0.0.1:8787" # dev via wrangler; prod: workers.dev
 
 webcams:
@@ -222,7 +221,6 @@ export const webcam = z.object({
 });
 export const settings = z.object({
   user_coord_ch2056: chCoord,
-  units: z.enum(['metric','imperial']).default('metric'),
   worker_base_url: z.string().url(),
 });
 export const root = z.object({ settings, webcams: z.array(webcam).min(1) });
@@ -330,7 +328,7 @@ Enable **independent development** of the **Worker** and the **SPA**, with a tig
   * Deliverables: Gallery UI, Pinia stores, YAML loader, integration tests.
 * **Shared** (`packages/`)
 
-  * `domain`: pure TS utilities (projection, haversine, bearing, units, compass sectors).
+  * `domain`: pure TS utilities (projection, haversine, bearing, compass sectors).
   * `config`: zod schema + loader for `webcams.yml`.
 
 ### API Contract (frozen for parallel work)
@@ -354,7 +352,6 @@ Enable **independent development** of the **Worker** and the **SPA**, with a tig
 ```yaml
 settings:
   user_coord_ch2056: { e: number, n: number }
-  units: metric|imperial
   worker_base_url: string
 webcams: Webcam[]
 ```
